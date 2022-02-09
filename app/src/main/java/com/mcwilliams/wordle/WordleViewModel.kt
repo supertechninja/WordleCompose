@@ -1,15 +1,23 @@
 package com.mcwilliams.wordle
 
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.mcwilliams.wordle.models.GuessLetter
+import com.mcwilliams.wordle.models.KeyState
+import com.mcwilliams.wordle.models.keyboardInit
+import com.mcwilliams.wordle.models.wordleGrid
+import dagger.hilt.android.lifecycle.HiltViewModel
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
-class WordleViewModel : ViewModel() {
+@HiltViewModel
+class WordleViewModel @Inject constructor(
+    private val wordleRepository: WordleRepository
+) : ViewModel() {
 
     val _wordleGuesses: MutableLiveData<List<List<GuessLetter>>> = MutableLiveData()
     val wordleGuesses: LiveData<List<List<GuessLetter>>> = _wordleGuesses
@@ -20,7 +28,7 @@ class WordleViewModel : ViewModel() {
     val currentCharGuess: MutableLiveData<Int> = MutableLiveData(0)
     val currentWordGuess: MutableLiveData<Int> = MutableLiveData(0)
 
-    val wordleWord: MutableLiveData<String> = MutableLiveData("")
+    val wordleWord: MutableLiveData<String> = MutableLiveData()
 
     private val _state = MutableLiveData<KonfettiState>(KonfettiState.Idle)
     val konfettiState: LiveData<KonfettiState> = _state
@@ -28,10 +36,9 @@ class WordleViewModel : ViewModel() {
     init {
         _wordleGuesses.postValue(wordleGrid)
 
-        //TODO Retreive Word of The Day
-        wordleWord.postValue("STEAK")
-
         _keyboard.postValue(keyboardInit)
+
+        wordleWord.postValue(wordleRepository.getTodaysWordleWord())
     }
 
     fun updateWordleGuesses(guesses: List<List<GuessLetter>>) {
@@ -49,7 +56,7 @@ class WordleViewModel : ViewModel() {
 
     private fun updateKeyboard(guesses: List<List<GuessLetter>>) {
         val guess = guesses[currentWordGuess.value!!]
-        keyboard.value?.let { keyRowsList ->
+        keyboard.value?.let { keyRowsList: List<List<KeyState>> ->
             val keyboardCopy = keyRowsList.toMutableList()
             keyboardCopy.forEach { keyRows ->
                 keyRows.forEach { key ->
@@ -69,10 +76,14 @@ class WordleViewModel : ViewModel() {
     fun validateGuess(guesses: List<List<GuessLetter>>) {
         val wordleGridCopy = guesses.toMutableList()
         val guess = wordleGridCopy[currentWordGuess.value!!].toMutableList()
+
+
         guess.forEachIndexed { index, guessLetter ->
-            guessLetter.isInWord = wordleWord.value!!.contains(guessLetter.value.text)
+            guessLetter.isInWord =
+                wordleWord.value!!.contains(guessLetter.value.text, ignoreCase = true)
             guessLetter.isInProperPlace =
-                wordleWord.value!!.toCharArray()[index].toString() == guessLetter.value.text
+                wordleWord.value!!.toCharArray()[index].toString()
+                    .equals(guessLetter.value.text, ignoreCase = true)
         }
         wordleGridCopy[currentWordGuess.value!!] = guess.toList()
         _wordleGuesses.postValue(wordleGridCopy)
@@ -89,7 +100,7 @@ class WordleViewModel : ViewModel() {
             guessString += guessLetter.value.text
         }
 
-        return guessString == wordleWord.value
+        return guessString.equals(wordleWord.value, ignoreCase = true)
     }
 
     fun sendCharDelete(guesses: List<List<GuessLetter>>) {
@@ -104,7 +115,25 @@ class WordleViewModel : ViewModel() {
 
     fun reset() {
         _wordleGuesses.postValue(wordleGrid)
-        _keyboard.postValue(keyboardInit)
+
+        keyboard.value?.let { keyRowsList: List<List<KeyState>> ->
+            val keyboardCopy = keyRowsList.toMutableList()
+            keyboardCopy.forEach { keyRows ->
+                keyRows.forEach { key ->
+                    key.used = false
+                    key.isInWord = false
+                    key.isInProperPlace = false
+                }
+            }
+            _keyboard.postValue(keyboardCopy)
+        }
+
+        currentCharGuess.postValue(0)
+        currentWordGuess.postValue(0)
+    }
+
+    fun refreshDate() {
+        wordleRepository.refreshDate()
     }
 }
 
@@ -112,98 +141,6 @@ sealed class KonfettiState {
     class Started(val party: List<Party>) : KonfettiState()
     object Idle : KonfettiState()
 }
-
-class GuessLetter(
-    var value: TextFieldValue = TextFieldValue(""),
-    var isInWord: Boolean = false,
-    var isInProperPlace: Boolean = false
-)
-
-val wordleGrid = listOf(
-    listOf(
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-    ),
-    listOf(
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-    ),
-    listOf(
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-    ), listOf(
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-    ), listOf(
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-    ), listOf(
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-        GuessLetter(),
-    )
-)
-
-class KeyState(
-    var char: String,
-    var used: Boolean = false,
-    var isInWord: Boolean = false,
-    var isInProperPlace: Boolean = false
-)
-
-val keyboardInit = listOf(
-    listOf(
-        KeyState("Q"),
-        KeyState("W"),
-        KeyState("E"),
-        KeyState("R"),
-        KeyState("T"),
-        KeyState("Y"),
-        KeyState("U"),
-        KeyState("I"),
-        KeyState("O"),
-        KeyState("P")
-    ),
-    listOf(
-        KeyState("A"),
-        KeyState("S"),
-        KeyState("D"),
-        KeyState("F"),
-        KeyState("G"),
-        KeyState("H"),
-        KeyState("J"),
-        KeyState("K"),
-        KeyState("L")
-    ),
-    listOf(
-        KeyState("ENTER"),
-        KeyState("Z"),
-        KeyState("X"),
-        KeyState("C"),
-        KeyState("V"),
-        KeyState("B"),
-        KeyState("N"),
-        KeyState("M"),
-        KeyState("BACK")
-    )
-)
 
 fun explode(): List<Party> {
     return listOf(
