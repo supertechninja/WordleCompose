@@ -22,6 +22,8 @@ class WordleRepository @Inject constructor(private val context: Context) {
 
     var today = Calendar.getInstance()
 
+    var todayWordleCount = 0
+
     init {
         wordleWords = loadWordleWords()
     }
@@ -33,7 +35,9 @@ class WordleRepository @Inject constructor(private val context: Context) {
 
         val today = Calendar.getInstance(Locale.ROOT)
 
-        return wordleWords[227 + countDaysBetweenTwoCalendar(startDate, today)]
+        todayWordleCount = 227 + countDaysBetweenTwoCalendar(startDate, today)
+
+        return wordleWords[todayWordleCount]
     }
 
     private fun loadWordleWords(): List<String> {

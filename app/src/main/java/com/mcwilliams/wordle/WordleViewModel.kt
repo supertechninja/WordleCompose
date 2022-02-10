@@ -33,6 +33,8 @@ class WordleViewModel @Inject constructor(
     private val _state = MutableLiveData<KonfettiState>(KonfettiState.Idle)
     val konfettiState: LiveData<KonfettiState> = _state
 
+    val shareString: MutableLiveData<String> = MutableLiveData()
+
     init {
         _wordleGuesses.postValue(wordleGrid)
 
@@ -91,7 +93,28 @@ class WordleViewModel @Inject constructor(
         //Check if each character word matches
         if (doAllLettersMatchWord(guess)) {
             _state.postValue(KonfettiState.Started(explode()))
+            buildShareString(wordleGridCopy, currentWordGuess.value!!)
         }
+    }
+
+    private fun buildShareString(wordleGridCopy: MutableList<List<GuessLetter>>, value: Int) {
+        var shareStr = "Wordle ${wordleRepository.todayWordleCount} ${value + 1}/6 \n\n"
+
+        wordleGridCopy.forEachIndexed { index, guess ->
+            if (index <= value) {
+                guess.forEach { letter ->
+                    if (letter.isInProperPlace && letter.isInWord) {
+                        shareStr += "\uD83D\uDFE9"
+                    } else if (letter.isInWord && !letter.isInProperPlace) {
+                        shareStr += "\uD83D\uDFE8"
+                    } else {
+                        shareStr += "⬛"
+                    }
+                }
+                shareStr += "\n"
+            }
+        }
+        shareString.postValue(shareStr)
     }
 
     private fun doAllLettersMatchWord(guess: MutableList<GuessLetter>): Boolean {

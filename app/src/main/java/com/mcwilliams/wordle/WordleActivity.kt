@@ -1,5 +1,6 @@
 package com.mcwilliams.wordle
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,12 +17,9 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -35,6 +33,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import nl.dionsegijn.konfetti.compose.KonfettiView
 import nl.dionsegijn.konfetti.compose.OnParticleSystemUpdateListener
 import nl.dionsegijn.konfetti.core.PartySystem
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -67,6 +66,8 @@ class MainActivity : ComponentActivity() {
 
                     val konfettiState by viewModel.konfettiState.observeAsState(null)
                     var showSuccessDialog by remember { mutableStateOf(false) }
+
+                    val shareString by viewModel.shareString.observeAsState()
 
                     wordleWord?.let { todaysWord ->
                         Column() {
@@ -102,7 +103,7 @@ class MainActivity : ComponentActivity() {
                                                 guess.forEachIndexed { index, guessLetter ->
                                                     Surface(
                                                         modifier = Modifier
-                                                            .size(if(height < width) height else width)
+                                                            .size(if (height < width) height else width)
                                                             .padding(
                                                                 horizontal = spacing,
                                                                 vertical = 4.dp
@@ -248,6 +249,8 @@ class MainActivity : ComponentActivity() {
                             }
 
                             if (showSuccessDialog) {
+                                val context = LocalContext.current
+
                                 AlertDialog(onDismissRequest = {
                                     viewModel.reset()
                                     showSuccessDialog = false
@@ -262,6 +265,21 @@ class MainActivity : ComponentActivity() {
                                     },
                                     confirmButton = {
                                         TextButton(onClick = {
+                                            shareString?.let { share ->
+                                                val shareIntent = Intent(Intent.ACTION_SEND)
+                                                shareIntent.type = "text/plain"
+                                                shareIntent.putExtra(
+                                                    Intent.EXTRA_TEXT,
+                                                    share
+                                                )
+                                                startActivity(
+                                                    Intent.createChooser(
+                                                        shareIntent,
+                                                        "Share via"
+                                                    )
+                                                )
+                                            }
+
                                             viewModel.reset()
                                             showSuccessDialog = false
                                         }) {
@@ -285,6 +303,10 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         viewModel.refreshDate()
     }
+}
+
+private fun buildShare(){
+
 }
 
 private fun removePreviousInput(
