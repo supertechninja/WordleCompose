@@ -35,22 +35,31 @@ class WordleViewModel @Inject constructor(
 
     val shareString: MutableLiveData<String> = MutableLiveData()
 
+    val wordError: MutableLiveData<Boolean> = MutableLiveData()
+
+    val showFirstLaunchInstructions : MutableLiveData<Boolean> = MutableLiveData()
+
     init {
         _wordleGuesses.postValue(wordleGrid)
 
         _keyboard.postValue(keyboardInit)
 
         wordleWord.postValue(wordleRepository.getTodaysWordleWord())
+
+        wordleRepository.isFirstLaunch?.let { firstLaunch ->
+            showFirstLaunchInstructions.postValue(firstLaunch)
+        }
     }
 
     fun updateWordleGuesses(guesses: List<List<GuessLetter>>) {
         _wordleGuesses.postValue(guesses)
         if (currentCharGuess.value!! == 4) {
-            validateGuess(guesses)
-            updateKeyboard(guesses)
+            if(validateGuess(guesses)) {
+                updateKeyboard(guesses)
 
-            currentWordGuess.postValue(currentWordGuess.value?.inc())
-            currentCharGuess.postValue(0)
+                currentWordGuess.postValue(currentWordGuess.value?.inc())
+                currentCharGuess.postValue(0)
+            }
         } else {
             currentCharGuess.postValue(currentCharGuess.value?.inc())
         }
@@ -75,26 +84,34 @@ class WordleViewModel @Inject constructor(
         }
     }
 
-    fun validateGuess(guesses: List<List<GuessLetter>>) {
+    fun validateGuess(guesses: List<List<GuessLetter>>) : Boolean {
         val wordleGridCopy = guesses.toMutableList()
         val guess = wordleGridCopy[currentWordGuess.value!!].toMutableList()
+        var wasGuessValid = false
+        //Validate if word existing in accepted list
+        if(wordleRepository.validateGuess(guess.map { it.value.text }.joinToString(""))) {
+            guess.forEachIndexed { index, guessLetter ->
+                guessLetter.isInWord =
+                    wordleWord.value!!.contains(guessLetter.value.text, ignoreCase = true)
+                guessLetter.isInProperPlace =
+                    wordleWord.value!!.toCharArray()[index].toString()
+                        .equals(guessLetter.value.text, ignoreCase = true)
+            }
+            wordleGridCopy[currentWordGuess.value!!] = guess.toList()
+            _wordleGuesses.postValue(wordleGridCopy)
 
+            wasGuessValid = true
 
-        guess.forEachIndexed { index, guessLetter ->
-            guessLetter.isInWord =
-                wordleWord.value!!.contains(guessLetter.value.text, ignoreCase = true)
-            guessLetter.isInProperPlace =
-                wordleWord.value!!.toCharArray()[index].toString()
-                    .equals(guessLetter.value.text, ignoreCase = true)
+            //Check if each character in word matches
+            if (doAllLettersMatchWord(guess)) {
+                _state.postValue(KonfettiState.Started(explode()))
+                buildShareString(wordleGridCopy, currentWordGuess.value!!)
+            }
+        } else {
+            wasGuessValid = false
+            wordError.postValue(true)
         }
-        wordleGridCopy[currentWordGuess.value!!] = guess.toList()
-        _wordleGuesses.postValue(wordleGridCopy)
-
-        //Check if each character word matches
-        if (doAllLettersMatchWord(guess)) {
-            _state.postValue(KonfettiState.Started(explode()))
-            buildShareString(wordleGridCopy, currentWordGuess.value!!)
-        }
+        return wasGuessValid
     }
 
     private fun buildShareString(wordleGridCopy: MutableList<List<GuessLetter>>, value: Int) {
@@ -157,6 +174,16 @@ class WordleViewModel @Inject constructor(
 
     fun refreshDate() {
         wordleRepository.refreshDate()
+    }
+
+    //Reset the row after invalid input
+    fun resetCurrentRow() {
+        wordError.postValue(false)
+    }
+
+    fun setNotFirstTime() {
+        wordleRepository.setFirstLaunch()
+        showFirstLaunchInstructions.postValue(false)
     }
 }
 

@@ -3,6 +3,7 @@ package com.mcwilliams.wordle
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.compose.ui.text.toLowerCase
 import androidx.core.content.edit
 import org.threeten.bp.LocalDate
 import java.io.BufferedReader
@@ -24,8 +25,23 @@ class WordleRepository @Inject constructor(private val context: Context) {
 
     var todayWordleCount = 0
 
+    var isFirstLaunch: Boolean? = null
+
+    private val preferences: SharedPreferences = context.getSharedPreferences(
+        "appPreferences",
+        Context.MODE_PRIVATE
+    )
+
     init {
         wordleWords = loadWordleWords()
+
+        if (preferences.getBoolean("isFirstLaunch", true)) {
+            isFirstLaunch = true
+            preferences.edit().putBoolean("isFirstLaunch", false).apply()
+        } else {
+            isFirstLaunch = false
+        }
+
     }
 
     fun getTodaysWordleWord(): String {
@@ -57,11 +73,23 @@ class WordleRepository @Inject constructor(private val context: Context) {
         today = Calendar.getInstance()
     }
 
-    private fun countDaysBetweenTwoCalendar(calendarStart: Calendar, calendarEnd: Calendar): Int {
+    private fun countDaysBetweenTwoCalendar(
+        calendarStart: Calendar,
+        calendarEnd: Calendar
+    ): Int {
         val millionSeconds = calendarEnd.timeInMillis - calendarStart.timeInMillis
         val days = TimeUnit.MILLISECONDS.toDays(millionSeconds) //this way not round number
         val daysRounded = (millionSeconds / (1000.0 * 60 * 60 * 24)).roundToInt()
         Log.d("TAG", "countDaysBetweenTwoCalendar: $daysRounded")
         return daysRounded
+    }
+
+    fun validateGuess(guessString: String): Boolean {
+        Log.d("TAG", "validateGuess: $guessString")
+        return wordleWords.contains(guessString.lowercase(Locale.ROOT))
+    }
+
+    fun setFirstLaunch() {
+        preferences.edit().putBoolean("isFirstLaunch", false).apply()
     }
 }

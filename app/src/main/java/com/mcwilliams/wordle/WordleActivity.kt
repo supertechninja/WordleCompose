@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.Divider
 import androidx.compose.material.TopAppBar
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,6 +28,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.mcwilliams.wordle.models.GuessLetter
 import com.mcwilliams.wordle.ui.theme.WordleTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -67,10 +69,14 @@ class MainActivity : ComponentActivity() {
                     val konfettiState by viewModel.konfettiState.observeAsState(null)
                     var showSuccessDialog by remember { mutableStateOf(false) }
 
+                    val validationError by viewModel.wordError.observeAsState(false)
+
                     val shareString by viewModel.shareString.observeAsState()
 
+                    val isFirstLaunch by viewModel.showFirstLaunchInstructions.observeAsState()
+
                     wordleWord?.let { todaysWord ->
-                        Column() {
+                        Column {
                             BoxWithConstraints(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -249,8 +255,6 @@ class MainActivity : ComponentActivity() {
                             }
 
                             if (showSuccessDialog) {
-                                val context = LocalContext.current
-
                                 AlertDialog(onDismissRequest = {
                                     viewModel.reset()
                                     showSuccessDialog = false
@@ -291,9 +295,27 @@ class MainActivity : ComponentActivity() {
                                         Text(text = "Would you like to share? \nCome back for tomorrows word")
                                     })
                             }
+
+                            if (validationError) {
+                                AlertDialog(
+                                    onDismissRequest = { },
+                                    title = {
+                                        Text("Invalid Word")
+                                    },
+                                    text = { Text("Please try again") },
+                                    confirmButton = {
+                                        TextButton(onClick = { viewModel.resetCurrentRow() }) {
+                                            Text(text = "Try Again")
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
 
+                    if (isFirstLaunch == true) {
+                        FirstLaunchDialog(viewModel = viewModel)
+                    }
                 }
             }
         }
@@ -303,10 +325,6 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         viewModel.refreshDate()
     }
-}
-
-private fun buildShare(){
-
 }
 
 private fun removePreviousInput(
