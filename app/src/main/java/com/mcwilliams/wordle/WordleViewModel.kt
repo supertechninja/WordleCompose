@@ -1,5 +1,6 @@
 package com.mcwilliams.wordle
 
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -58,6 +59,11 @@ class WordleViewModel @Inject constructor(
                 updateKeyboard(guesses)
 
                 currentWordGuess.postValue(currentWordGuess.value?.inc())
+                currentCharGuess.postValue(0)
+            } else {
+                val guessCopy = guesses.toMutableList()
+                guessCopy[currentWordGuess.value!!] = wordleGrid[0]
+                _wordleGuesses.postValue(guessCopy)
                 currentCharGuess.postValue(0)
             }
         } else {
@@ -179,7 +185,6 @@ class WordleViewModel @Inject constructor(
     //Reset the row after invalid input
     fun resetCurrentRow() {
         wordError.postValue(false)
-        //TODO delete current index guess
     }
 
     fun setNotFirstTime() {

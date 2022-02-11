@@ -30,8 +30,7 @@ fun FirstLaunchDialog(viewModel: WordleViewModel) {
             ) {
                 Text(text ="Guess the word in six tries.")
 
-                Text(text = "Each guess must be a valid five-letter word. Hit the " +
-                            "enter button to submit.")
+                Text(text = "Each guess must be a valid five-letter word. Words are auto-submitted at 5 letters.")
 
                 Text(text = "After each guess, the color of the tiles will change to " +
                             "show how close your guess was to the word.")

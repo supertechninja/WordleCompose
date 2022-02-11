@@ -32,7 +32,7 @@ val keyboardInit = listOf(
         KeyState("L")
     ),
     listOf(
-        KeyState("ENTER"),
+        KeyState("DEL"),
         KeyState("Z"),
         KeyState("X"),
         KeyState("C"),
@@ -40,6 +40,6 @@ val keyboardInit = listOf(
         KeyState("B"),
         KeyState("N"),
         KeyState("M"),
-        KeyState("BACK")
+        KeyState("DEL")
     )
 )

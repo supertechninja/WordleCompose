@@ -170,8 +170,8 @@ class MainActivity : ComponentActivity() {
                                                     Surface(
                                                         modifier = Modifier
                                                             .width(
-                                                                if (letter.char == "ENTER" || letter.char == "BACK") width.times(
-                                                                    2
+                                                                if (letter.char == "DEL") width.times(
+                                                                    1.5f
                                                                 ) else width
                                                             )
                                                             .height(70.dp)
@@ -183,21 +183,24 @@ class MainActivity : ComponentActivity() {
                                                                 haptic.performHapticFeedback(
                                                                     HapticFeedbackType.LongPress
                                                                 )
-                                                                if (letter.char == "BACK") {
-                                                                    removePreviousInput(
-                                                                        guessWordCount,
-                                                                        guessLetterCount,
-                                                                        viewModel,
-                                                                        wordleGuesses
-                                                                    )
-                                                                } else {
-                                                                    inputChar(
-                                                                        guessWordCount,
-                                                                        guessLetterCount,
-                                                                        letter.char,
-                                                                        viewModel,
-                                                                        wordleGuesses
-                                                                    )
+                                                                when (letter.char) {
+                                                                    "DEL" -> {
+                                                                        removePreviousInput(
+                                                                            guessWordCount,
+                                                                            guessLetterCount,
+                                                                            viewModel,
+                                                                            wordleGuesses
+                                                                        )
+                                                                    }
+                                                                    else -> {
+                                                                        inputChar(
+                                                                            guessWordCount,
+                                                                            guessLetterCount,
+                                                                            letter.char,
+                                                                            viewModel,
+                                                                            wordleGuesses
+                                                                        )
+                                                                    }
                                                                 }
                                                             },
                                                         shape = RoundedCornerShape(8.dp),
