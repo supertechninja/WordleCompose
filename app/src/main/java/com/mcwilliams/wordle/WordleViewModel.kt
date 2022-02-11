@@ -179,6 +179,7 @@ class WordleViewModel @Inject constructor(
     //Reset the row after invalid input
     fun resetCurrentRow() {
         wordError.postValue(false)
+        //TODO delete current index guess
     }
 
     fun setNotFirstTime() {

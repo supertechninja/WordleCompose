@@ -28,138 +28,66 @@ fun FirstLaunchDialog(viewModel: WordleViewModel) {
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("Guess the word in six tries.")
+                Text(text ="Guess the word in six tries.")
 
-                Text(
-                    "Each quess must be a valid five-letter word. Hit the " +
-                            "enter button to submit."
-                )
+                Text(text = "Each guess must be a valid five-letter word. Hit the " +
+                            "enter button to submit.")
 
-                Text(
-                    text = "After each guess, the color of the tiles will change to " +
-                            "show how close your quess was to the word."
-                )
+                Text(text = "After each guess, the color of the tiles will change to " +
+                            "show how close your guess was to the word.")
 
-                Divider(modifier = Modifier.height(0.5.dp))
+                Divider(modifier = Modifier.height(0.5.dp), color = MaterialTheme.colorScheme.onSurface)
 
-                Text("Examples")
+                Text(text = "Examples")
 
-                val exampleWord1 = listOf("W", "E", "A", "R", "Y")
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    exampleWord1.forEachIndexed { index, s ->
-                        if (index == 0) {
-                            Surface(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .padding(4.dp),
-                                color = Color(93, 134, 81),
-                                border = BorderStroke(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.onSurface
-                                )
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text(
-                                        s,
-                                        textAlign = TextAlign.Center,
-                                        style = MaterialTheme.typography.bodyLarge
-                                    )
-                                }
+                examplesList.forEachIndexed { examplesIndex, examples ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        examples.first.forEachIndexed { letterIndex, char ->
+                            var colorSquare = MaterialTheme.colorScheme.surface
+                            if (examplesIndex == 0 && letterIndex == 0) {
+                                colorSquare = Color(93, 134, 81)
+                            } else if(examplesIndex == 1 && letterIndex == 1){
+                                colorSquare = Color(178, 160, 76)
+                            } else if(examplesIndex == 2){
+                                colorSquare = Color(58, 58, 60)
                             }
-                        } else {
-                            Surface(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .padding(4.dp),
-                                color = MaterialTheme.colorScheme.surface,
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text(
-                                        s,
-                                        textAlign = TextAlign.Center,
-                                        style = MaterialTheme.typography.bodyLarge
-                                    )
-                                }
-                            }
+
+                            LetterSquare(colorSquare, char)
                         }
                     }
+
+                    Text(text = examples.second)
                 }
 
-                Text("The letter W is in the word and in the correct spot.")
+                Divider(modifier = Modifier.height(0.5.dp), color = MaterialTheme.colorScheme.onSurface)
 
-                val exampleWord2 = listOf("P", "I", "L", "L", "S")
-                Row() {
-                    exampleWord2.forEachIndexed { index, s ->
-
-                        if (index == 1) {
-                            Surface(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .padding(4.dp),
-                                color = Color(178, 160, 76),
-                                border = BorderStroke(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.onSurface
-                                )
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text(
-                                        s,
-                                        textAlign = TextAlign.Center,
-                                        style = MaterialTheme.typography.bodyLarge
-                                    )
-                                }
-                            }
-                        } else {
-                            Surface(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .padding(4.dp),
-                                color = MaterialTheme.colorScheme.surface,
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text(
-                                        s,
-                                        textAlign = TextAlign.Center,
-                                        style = MaterialTheme.typography.bodyLarge
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Text("The letter I is in the word but in the wrong spot.")
-
-                val exampleWord3 = listOf("V", "A", "G", "U", "E")
-
-                Row() {
-                    exampleWord3.forEachIndexed { index, s ->
-                        Surface(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .padding(4.dp),
-                            color = Color(58, 58, 60),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    s,
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-                            }
-                        }
-                    }
-                }
-                Text("The letter U is not in the word in any spot.")
-
-                Divider(modifier = Modifier.height(0.5.dp))
-
-                Text("A new WORDLE will be available each day!")
+                Text(text = "A new WORDLE will be available each day!")
             }
         }
     }
 }
+
+@Composable
+fun LetterSquare(color: Color, letter: String) {
+    Surface(
+        modifier = Modifier
+            .size(40.dp)
+            .padding(4.dp),
+        color = color,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = letter,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+    }
+}
+
+val examplesList = listOf(
+    listOf("W", "E", "A", "R", "Y") to "The letter W is in the word and in the correct spot.",
+    listOf("P", "I", "L", "L", "S") to "The letter I is in the word but in the wrong spot.",
+    listOf("V", "A", "G", "U", "E") to "The letter U is not in the word in any spot."
+)
