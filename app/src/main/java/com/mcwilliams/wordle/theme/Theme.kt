@@ -1,4 +1,4 @@
-package com.mcwilliams.wordle.ui.theme
+package com.mcwilliams.wordle.theme
 
 import android.app.Activity
 import android.os.Build

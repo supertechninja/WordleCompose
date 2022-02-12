@@ -1,20 +1,15 @@
-package com.mcwilliams.wordle
+package com.mcwilliams.wordle.ui
 
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import androidx.compose.ui.text.toLowerCase
-import androidx.core.content.edit
-import org.threeten.bp.LocalDate
+import com.mcwilliams.wordle.R
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.sql.Date
-import java.time.Instant
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.log
 import kotlin.math.roundToInt
 
 @Singleton

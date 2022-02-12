@@ -1,6 +1,5 @@
-package com.mcwilliams.wordle
+package com.mcwilliams.wordle.ui
 
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel

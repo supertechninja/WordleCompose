@@ -1,6 +1,5 @@
-package com.mcwilliams.wordle
+package com.mcwilliams.wordle.ui
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,7 +10,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.Divider
 import androidx.compose.material.TopAppBar
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -28,9 +25,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import com.mcwilliams.wordle.models.GuessLetter
-import com.mcwilliams.wordle.ui.theme.WordleTheme
+import com.mcwilliams.wordle.theme.WordleTheme
+import com.mcwilliams.wordle.ui.stats.StatsDialog
+import com.mcwilliams.wordle.ui.stats.StatsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import nl.dionsegijn.konfetti.compose.KonfettiView
 import nl.dionsegijn.konfetti.compose.OnParticleSystemUpdateListener
@@ -38,8 +36,10 @@ import nl.dionsegijn.konfetti.core.PartySystem
 
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class WordleActivity : ComponentActivity() {
     private val viewModel: WordleViewModel by viewModels()
+
+    private val statsViewModel: StatsViewModel by viewModels()
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -237,6 +237,8 @@ class MainActivity : ComponentActivity() {
 
                                 konfettiState?.let {
                                     if (it is KonfettiState.Started) {
+                                        statsViewModel.saveCurrentStats(guessWordCount!!, true)
+
                                         KonfettiView(
                                             modifier = Modifier.fillMaxSize(),
                                             parties = (konfettiState as KonfettiState.Started).party,
@@ -258,45 +260,10 @@ class MainActivity : ComponentActivity() {
                             }
 
                             if (showSuccessDialog) {
-                                AlertDialog(onDismissRequest = {
+                                StatsDialog(statsViewModel ,shareString.orEmpty()){
                                     viewModel.reset()
                                     showSuccessDialog = false
-                                },
-                                    dismissButton = {
-                                        TextButton(onClick = {
-                                            viewModel.reset()
-                                            showSuccessDialog = false
-                                        }) {
-                                            Text(text = "No Thanks")
-                                        }
-                                    },
-                                    confirmButton = {
-                                        TextButton(onClick = {
-                                            shareString?.let { share ->
-                                                val shareIntent = Intent(Intent.ACTION_SEND)
-                                                shareIntent.type = "text/plain"
-                                                shareIntent.putExtra(
-                                                    Intent.EXTRA_TEXT,
-                                                    share
-                                                )
-                                                startActivity(
-                                                    Intent.createChooser(
-                                                        shareIntent,
-                                                        "Share via"
-                                                    )
-                                                )
-                                            }
-
-                                            viewModel.reset()
-                                            showSuccessDialog = false
-                                        }) {
-                                            Text(text = "Share")
-                                        }
-                                    }, title = {
-                                        Text(text = "Congratulations")
-                                    }, text = {
-                                        Text(text = "Would you like to share? \nCome back for tomorrows word")
-                                    })
+                                }
                             }
 
                             if (validationError) {
