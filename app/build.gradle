@@ -61,6 +61,8 @@ dependencies {
     implementation 'nl.dionsegijn:konfetti-compose:2.0.1'
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
 
+    implementation 'com.wajahatkarim:flippable:1.0.4'
+
     //Dagger Hilt
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-compiler:$hilt_version"

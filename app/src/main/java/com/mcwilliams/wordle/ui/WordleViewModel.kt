@@ -30,6 +30,8 @@ class WordleViewModel @Inject constructor(
 
     val wordleWord: MutableLiveData<String> = MutableLiveData()
 
+    val flipRow: MutableLiveData<Int?> = MutableLiveData(null)
+
     private val _state = MutableLiveData<KonfettiState>(KonfettiState.Idle)
     val konfettiState: LiveData<KonfettiState> = _state
 
@@ -57,6 +59,7 @@ class WordleViewModel @Inject constructor(
             if(validateGuess(guesses)) {
                 updateKeyboard(guesses)
 
+                flipRow.postValue(currentWordGuess.value)
                 currentWordGuess.postValue(currentWordGuess.value?.inc())
                 currentCharGuess.postValue(0)
             } else {
@@ -117,6 +120,10 @@ class WordleViewModel @Inject constructor(
             wordError.postValue(true)
         }
         return wasGuessValid
+    }
+
+    fun resetFlip(){
+        flipRow.postValue(null)
     }
 
     private fun buildShareString(wordleGridCopy: MutableList<List<GuessLetter>>, value: Int) {
