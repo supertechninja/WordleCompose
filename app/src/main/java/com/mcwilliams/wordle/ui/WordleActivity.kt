@@ -1,6 +1,7 @@
 package com.mcwilliams.wordle.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -29,11 +30,12 @@ import com.mcwilliams.wordle.models.GuessLetter
 import com.mcwilliams.wordle.theme.WordleTheme
 import com.mcwilliams.wordle.ui.stats.StatsDialog
 import com.mcwilliams.wordle.ui.stats.StatsViewModel
+import com.wajahatkarim.flippable.Flippable
+import com.wajahatkarim.flippable.rememberFlipController
 import dagger.hilt.android.AndroidEntryPoint
 import nl.dionsegijn.konfetti.compose.KonfettiView
 import nl.dionsegijn.konfetti.compose.OnParticleSystemUpdateListener
 import nl.dionsegijn.konfetti.core.PartySystem
-
 
 @AndroidEntryPoint
 class WordleActivity : ComponentActivity() {
@@ -75,6 +77,8 @@ class WordleActivity : ComponentActivity() {
 
                     val isFirstLaunch by viewModel.showFirstLaunchInstructions.observeAsState()
 
+                    val flipRow by viewModel.flipRow.observeAsState()
+
                     wordleWord?.let { todaysWord ->
                         Column {
                             BoxWithConstraints(
@@ -93,7 +97,7 @@ class WordleActivity : ComponentActivity() {
                                         .align(Alignment.TopCenter)
                                         .padding(top = 4.dp)
                                 ) {
-                                    wordleGuesses.forEach { guess ->
+                                    wordleGuesses.forEachIndexed { index, guess ->
                                         BoxWithConstraints(
                                             modifier = Modifier.fillMaxWidth(),
                                             contentAlignment = Alignment.Center
@@ -102,44 +106,96 @@ class WordleActivity : ComponentActivity() {
                                             val width = this.maxWidth.times(.90f) / 5
                                             val height = gridHeight.times(.80f) / 5
 
+                                            val controller = rememberFlipController()
+
+                                            val shouldRowFlip = index == flipRow
+
                                             Row(
                                                 horizontalArrangement = Arrangement.Center,
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
                                                 guess.forEachIndexed { index, guessLetter ->
-                                                    Surface(
-                                                        modifier = Modifier
-                                                            .size(if (height < width) height else width)
-                                                            .padding(
-                                                                horizontal = spacing,
-                                                                vertical = 4.dp
-                                                            ),
-                                                        color =
-                                                        if (guessLetter.isInWord && guessLetter.isInProperPlace)
-                                                            Color(93, 134, 81)
-                                                        else if (guessLetter.isInWord)
-                                                            Color(178, 160, 76)
-                                                        else
-                                                            MaterialTheme.colorScheme.surface,
-                                                        border = BorderStroke(
-                                                            1.dp,
-                                                            MaterialTheme.colorScheme.onSurface
-                                                        )
-                                                    ) {
-                                                        Box(contentAlignment = Alignment.Center) {
-                                                            BasicTextField(
-                                                                value = guessLetter.value,
-                                                                onValueChange = {
-                                                                    guessLetter.value = it
-                                                                },
-                                                                readOnly = true,
-                                                                textStyle = TextStyle(
-                                                                    color = MaterialTheme.colorScheme.onSurface,
-                                                                    fontSize = 26.sp,
-                                                                    textAlign = TextAlign.Center
+                                                    Flippable(
+                                                        frontSide = {
+                                                            Surface(
+                                                                modifier = Modifier
+                                                                    .size(if (height < width) height else width)
+                                                                    .padding(
+                                                                        horizontal = spacing,
+                                                                        vertical = 4.dp
+                                                                    ),
+                                                                color =
+                                                                if (guessLetter.isInWord && guessLetter.isInProperPlace)
+                                                                    Color(93, 134, 81)
+                                                                else if (guessLetter.isInWord)
+                                                                    Color(178, 160, 76)
+                                                                else
+                                                                    MaterialTheme.colorScheme.surface,
+                                                                border = BorderStroke(
+                                                                    1.dp,
+                                                                    MaterialTheme.colorScheme.onSurface
                                                                 )
-                                                            )
+                                                            ) {
+                                                                Box(contentAlignment = Alignment.Center) {
+                                                                    BasicTextField(
+                                                                        value = guessLetter.value,
+                                                                        onValueChange = {
+                                                                            guessLetter.value = it
+                                                                        },
+                                                                        readOnly = true,
+                                                                        textStyle = TextStyle(
+                                                                            color = MaterialTheme.colorScheme.onSurface,
+                                                                            fontSize = 26.sp,
+                                                                            textAlign = TextAlign.Center
+                                                                        )
+                                                                    )
+                                                                }
+                                                            }
+                                                        },
+                                                        backSide = {
+                                                            Surface(
+                                                                modifier = Modifier
+                                                                    .size(if (height < width) height else width)
+                                                                    .padding(
+                                                                        horizontal = spacing,
+                                                                        vertical = 4.dp
+                                                                    ),
+                                                                color =
+                                                                if (guessLetter.isInWord && guessLetter.isInProperPlace)
+                                                                    Color(93, 134, 81)
+                                                                else if (guessLetter.isInWord)
+                                                                    Color(178, 160, 76)
+                                                                else
+                                                                    MaterialTheme.colorScheme.surface,
+                                                                border = BorderStroke(
+                                                                    1.dp,
+                                                                    MaterialTheme.colorScheme.onSurface
+                                                                )
+                                                            ) {
+                                                                Box(contentAlignment = Alignment.Center) {
+                                                                    BasicTextField(
+                                                                        value = guessLetter.value,
+                                                                        onValueChange = {
+                                                                            guessLetter.value = it
+                                                                        },
+                                                                        readOnly = true,
+                                                                        textStyle = TextStyle(
+                                                                            color = MaterialTheme.colorScheme.onSurface,
+                                                                            fontSize = 26.sp,
+                                                                            textAlign = TextAlign.Center
+                                                                        )
+                                                                    )
+                                                                }
+                                                            }
+                                                        },
+                                                        flipController = controller,
+                                                        onFlippedListener = {
+
                                                         }
+                                                    )
+                                                    
+                                                    if(shouldRowFlip){
+                                                        controller.flip()
                                                     }
                                                 }
                                             }
@@ -260,7 +316,7 @@ class WordleActivity : ComponentActivity() {
                             }
 
                             if (showSuccessDialog) {
-                                StatsDialog(statsViewModel ,shareString.orEmpty()){
+                                StatsDialog(statsViewModel, shareString.orEmpty()) {
                                     viewModel.reset()
                                     showSuccessDialog = false
                                 }

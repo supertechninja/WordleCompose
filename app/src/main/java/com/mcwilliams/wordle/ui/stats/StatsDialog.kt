@@ -37,7 +37,7 @@ fun StatsDialog(statsViewModel: StatsViewModel, shareString: String, onDismissRe
                     Text("STATISTICS")
 
                     Row(
-                        modifier = Modifier.padding(horizontal = 24.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(
                             16.dp,
                             Alignment.CenterHorizontally
@@ -46,7 +46,7 @@ fun StatsDialog(statsViewModel: StatsViewModel, shareString: String, onDismissRe
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 stats.gamesPlayed.toString(),
-                                style = MaterialTheme.typography.displayLarge,
+                                style = MaterialTheme.typography.displayMedium,
                                 textAlign = TextAlign.Center
                             )
                             Text(
@@ -58,8 +58,8 @@ fun StatsDialog(statsViewModel: StatsViewModel, shareString: String, onDismissRe
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                stats.wins.toString(),
-                                style = MaterialTheme.typography.displayLarge,
+                                "${((stats.wins / stats.gamesPlayed) * 100)}",
+                                style = MaterialTheme.typography.displayMedium,
                                 textAlign = TextAlign.Center
                             )
                             Text(
@@ -72,7 +72,7 @@ fun StatsDialog(statsViewModel: StatsViewModel, shareString: String, onDismissRe
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 stats.currentStreak.toString(),
-                                style = MaterialTheme.typography.displayLarge,
+                                style = MaterialTheme.typography.displayMedium,
                                 textAlign = TextAlign.Center
                             )
                             Text(
@@ -85,7 +85,7 @@ fun StatsDialog(statsViewModel: StatsViewModel, shareString: String, onDismissRe
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 stats.maxStreak.toString(),
-                                style = MaterialTheme.typography.displayLarge,
+                                style = MaterialTheme.typography.displayMedium,
                                 textAlign = TextAlign.Center
                             )
                             Text(
